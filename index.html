@@ -491,7 +491,7 @@ function render(){
  route=r;
  const links=Object.keys(ROUTES).filter(k=>ROUTES[k].roles.indexOf(u.role)>=0);
  const side=links.map(k=>'<a href="#/'+k+'" class="'+(k===r?'active':'')+'"><span class="ic">'+ROUTES[k].icon+'</span>'+t(navKey(k))+'</a>').join('');
- const tabs=links.slice(0,5).map(k=>'<a href="#/'+k+'" class="'+(k===r?'active':'')+'"><span class="ic">'+ROUTES[k].icon+'</span>'+t(navKey(k))+'</a>').join('');
+ const tabs=links.slice(0,6).map(k=>'<a href="#/'+k+'" class="'+(k===r?'active':'')+'"><span class="ic">'+ROUTES[k].icon+'</span>'+t(navKey(k))+'</a>').join('');
  const body=({desktop:viewDesktop,wall:viewWall,calls:viewCalls,qa:viewQa,shifts:viewShifts,reports:viewReports,settings:viewSettings})[r]();
  document.getElementById('app').innerHTML=
  '<div class="shell">'+
