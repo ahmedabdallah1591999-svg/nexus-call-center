@@ -311,7 +311,7 @@ function seed(){
  // 7 days of call history
  const calls=[];let cn=1000;
  for(let d=7;d>=1;d--){
-   const ds=sat-d*86400000;
+   const ds=dayStart(now.getTime())-d*86400000;
    agents.forEach(a=>{
      const n=6+Math.floor(Math.random()*7);
      for(let i=0;i<n;i++){
