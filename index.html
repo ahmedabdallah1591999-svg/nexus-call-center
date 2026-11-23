@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>نيكسس كول سنتر — نسخة تجريبية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Nexus Call Center - demo */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f1f5f9;--card:#ffffff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;
+  --brand:#4f46e5;--brand-d:#4338ca;--brand-soft:#eef2ff;
+  --ready:#16a34a;--oncall:#7c3aed;--acw:#2563eb;--break:#d97706;--offline:#64748b;
+  --danger:#dc2626;--ok:#16a34a;--warn:#d97706;
+  --radius:14px;--shadow:0 1px 3px rgba(15,23,42,.08),0 4px 14px rgba(15,23,42,.06);
+}
+html,body{height:100%}
+body{
+  font-family:'Cairo','Segoe UI',Tahoma,Arial,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+.hidden{display:none!important}
+
+/* ---------- layout ---------- */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:232px;background:#0f172a;color:#cbd5e1;display:flex;flex-direction:column;position:fixed;inset-block:0;inset-inline-start:0;z-index:30}
+.side-brand{padding:18px 18px 14px;border-bottom:1px solid #1e293b}
+.side-brand .logo{font-size:19px;font-weight:800;color:#fff;letter-spacing:.3px}
+.side-brand .sub{font-size:11.5px;color:#94a3b8;margin-top:2px}
+.side-nav{flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:3px;overflow-y:auto}
+.side-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:#cbd5e1;text-decoration:none;font-size:14px;font-weight:600}
+.side-nav a .ic{width:20px;text-align:center}
+.side-nav a:hover{background:#1e293b;color:#fff}
+.side-nav a.active{background:var(--brand);color:#fff}
+.side-foot{padding:12px 14px;border-top:1px solid #1e293b;font-size:12px;color:#94a3b8}
+.main{flex:1;margin-inline-start:232px;display:flex;flex-direction:column;min-width:0}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.topbar .page-title{font-size:17px;font-weight:800;flex:1;min-width:120px}
+.content{padding:20px;max-width:1200px;width:100%;margin:0 auto}
+
+/* ---------- badges & chips ---------- */
+.sim-badge{display:inline-flex;align-items:center;gap:6px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;font-size:12.5px;font-weight:700;color:#fff}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.85)}
+.chip.ready{background:var(--ready)}.chip.oncall{background:var(--oncall)}.chip.acw{background:var(--acw)}.chip.break{background:var(--break)}.chip.offline{background:var(--offline)}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--brand-soft);color:var(--brand-d)}
+.pill.gray{background:#f1f5f9;color:var(--muted)}
+.pill.green{background:#dcfce7;color:#166534}
+.pill.amber{background:#fef3c7;color:#92400e}
+.pill.red{background:#fee2e2;color:#991b1b}
+
+/* ---------- cards & grids ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.card h3{font-size:15px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.grid{display:grid;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px}
+.kpi .lbl{font-size:12px;color:var(--muted);font-weight:700}
+.kpi .val{font-size:26px;font-weight:800;margin-top:4px}
+.kpi .sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.mt{margin-top:16px}.mb{margin-bottom:16px}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 16px;border-radius:10px;font-size:14px;font-weight:700;background:var(--brand);color:#fff;transition:filter .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.soft{background:var(--brand-soft);color:var(--brand-d)}
+.btn.danger{background:var(--danger)}
+.btn.ok{background:var(--ok)}
+.btn.warn{background:var(--warn)}
+.btn.gray{background:#e2e8f0;color:#334155}
+.btn.big{padding:13px 22px;font-size:15px;border-radius:12px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px}
+th{background:#f8fafc;text-align:start;padding:10px 12px;font-size:12px;color:var(--muted);font-weight:800;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbff}
+
+/* ---------- wallboard ---------- */
+.wall-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
+.agent-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;position:relative;overflow:hidden}
+.agent-card::before{content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--st,#64748b)}
+.agent-card .head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0}
+.agent-card .nm{font-weight:800;font-size:14px}
+.agent-card .rl{font-size:11.5px;color:var(--muted)}
+.agent-card .strow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.agent-card .since{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.agent-card .mini{display:flex;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--muted)}
+.agent-card .mini b{color:var(--ink)}
+
+/* ---------- agent desktop ---------- */
+.desk-status{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 18px;text-align:center}
+.desk-status .big-chip{font-size:16px;padding:8px 22px}
+.desk-status .timer{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--muted)}
+.desk-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.call-popup{border:2px solid var(--oncall);background:linear-gradient(135deg,#faf5ff,#fff);border-radius:var(--radius);padding:18px;box-shadow:0 8px 30px rgba(124,58,237,.18);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 8px 30px rgba(124,58,237,.18)}50%{box-shadow:0 8px 38px rgba(124,58,237,.38)}}
+.call-popup .ring{font-size:13px;font-weight:800;color:var(--oncall);display:flex;align-items:center;gap:8px}
+.call-popup .who{font-size:21px;font-weight:800;margin:8px 0 2px}
+.call-popup .num{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums;direction:ltr;display:inline-block}
+.active-call{background:linear-gradient(135deg,#f5f3ff,#fff);border:2px solid var(--oncall);border-radius:var(--radius);padding:18px}
+.rec-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--danger);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+
+/* ---------- modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{font-size:16px;font-weight:800;margin-bottom:14px}
+.modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:5px}
+
+/* ---------- login ---------- */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f172a,#312e81)}
+.login-box{background:#fff;border-radius:18px;padding:26px;max-width:440px;width:100%;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.login-box .logo{font-size:23px;font-weight:800;text-align:center}
+.login-box .tag{text-align:center;color:var(--muted);font-size:13px;margin:4px 0 16px}
+.demo-accounts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.demo-acc{border:1px solid var(--line);border-radius:10px;padding:9px 11px;text-align:start;font-size:12.5px;background:#f8fafc;transition:border-color .15s}
+.demo-acc:hover{border-color:var(--brand)}
+.demo-acc b{display:block;font-size:13px}
+.demo-acc span{color:var(--muted);font-size:11.5px}
+
+/* ---------- qa ---------- */
+.stars{display:flex;gap:4px}
+.stars button{font-size:22px;color:#cbd5e1;line-height:1}
+.stars button.on{color:#f59e0b}
+audio{width:100%;height:38px;margin-top:6px}
+
+/* ---------- bars ---------- */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12.5px}
+.bar-row .bl{width:110px;flex-shrink:0;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;background:#f1f5f9;border-radius:6px;height:16px;overflow:hidden}
+.bar-fill{height:100%;background:var(--brand);border-radius:6px;min-width:2px}
+.bar-row .bv{width:64px;flex-shrink:0;text-align:end;font-weight:800;font-variant-numeric:tabular-nums}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;bottom:76px;inset-inline:0;margin-inline:auto;max-width:420px;width:calc(100% - 32px);background:#0f172a;color:#fff;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:600;z-index:80;box-shadow:0 10px 30px rgba(0,0,0,.3);text-align:center}
+
+/* ---------- bottom nav (mobile) ---------- */
+.bottomnav{display:none}
+@media(max-width:860px){
+  .sidebar{display:none}
+  .main{margin-inline-start:0}
+  .content{padding:14px 12px 90px}
+  .bottomnav{display:flex;position:fixed;bottom:0;inset-inline:0;background:#0f172a;z-index:40;padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around}
+  .bottomnav a{display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:10.5px;font-weight:700;padding:5px 8px;border-radius:8px;min-width:56px}
+  .bottomnav a .ic{font-size:18px}
+  .bottomnav a.active{color:#fff;background:var(--brand)}
+  .demo-accounts{grid-template-columns:1fr 1fr}
+  .desk-actions{grid-template-columns:1fr 1fr}
+}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* Nexus Call Center — demo (simulation). No real calls; data stays in this browser. */
+'use strict';
+const I18N = {
+ar: {
+ appName:'نيكسس كول سنتر', appSub:'نظام إدارة مركز الاتصال', simBadge:'نسخة تجريبية — بيانات محاكاة',
+ loginTitle:'تسجيل الدخول', loginTag:'اختر حسابًا تجريبيًا أو اكتب بياناته. كلمة السر لكل الحسابات: 1234',
+ username:'اسم المستخدم', password:'كلمة السر', loginBtn:'دخول', wrongLogin:'بيانات الدخول غير صحيحة',
+ demoAccounts:'الحسابات التجريبية', logout:'خروج', langBtn:'English',
+ navDesktop:'شاشة الموظف', navWall:'المتابعة الحية', navCalls:'سجل المكالمات', navQa:'تقييم الجودة',
+ navShifts:'الشيفتات', navReports:'التقارير', navSettings:'الإعدادات',
+ ready:'جاهز', oncall:'في مكالمة', acw:'تقييد بعد المكالمة', break:'بريك', offline:'غير متصل',
+ breakShort:'بريك قصير', lunch:'غداء', meeting:'اجتماع', training:'تدريب',
+ setReady:'متاح للمكالمات', takeBreak:'بدء بريك', endBreak:'إنهاء البريك', startAcw:'تقييد مكالمة',
+ timeInStatus:'الوقت في الحالة الحالية', currentStatus:'حالتك الآن',
+ incomingCall:'مكالمة واردة', answer:'رد', reject:'رفض', queue:'الطابور', customer:'العميل', phone:'رقم الهاتف',
+ callActive:'مكالمة جارية', endCall:'إنهاء المكالمة', callDuration:'مدة المكالمة', recordingOn:'جارٍ التسجيل', recordingOff:'بدون تسجيل صوتي',
+ wrapTitle:'تقييد المكالمة', disposition:'نتيجة المكالمة', note:'ملاحظة', saveWrap:'حفظ وإنهاء',
+ dSolved:'تم الحل', dFollow:'متابعة لاحقة', dComplaint:'شكوى مفتوحة', dInquiry:'استفسار عام', dCancel:'إلغاء أو تعديل طلب',
+ micTitle:'تسجيل صوت المكالمة التجريبية',
+ micBody:'في النسخة التجريبية يمكن تسجيل صوتك من الميكروفون أثناء المكالمة المحاكاة ليتمكن فريق الجودة من سماعه ومراجعته. التسجيل اختياري تمامًا ويُحفظ داخل متصفحك فقط، ويمكنك تنزيله على جهازك من سجل المكالمات. هل تريد تفعيل التسجيل؟',
+ micYes:'نعم، فعّل التسجيل', micNo:'لا، بدون تسجيل', micDenied:'الميكروفون غير متاح، سيتم حفظ المكالمة بدون تسجيل',
+ qSales:'المبيعات', qSupport:'خدمة العملاء', qComplaints:'الشكاوى',
+ wallTitle:'شاشة المتابعة الحية', agents:'الموظفون', callsToday:'مكالمات اليوم', aht:'متوسط زمن المكالمة',
+ onShiftNow:'على الشيفت الآن', waitingNow:'مكالمات في الانتظار', simulatedAgent:'محاكاة',
+ colAgent:'الموظف', colStatus:'الحالة', colSince:'منذ', colCalls:'المكالمات', colAht:'متوسط الزمن',
+ callsTitle:'سجل المكالمات', search:'بحث بالاسم أو الرقم', allQueues:'كل الطوابير', allAgents:'كل الموظفين',
+ allResults:'كل النتائج', answered:'تم الرد', abandoned:'فائتة', direction:'الاتجاه', inbound:'واردة', outbound:'صادرة',
+ date:'التاريخ', time:'الوقت', duration:'المدة', wait:'الانتظار', result:'النتيجة', recording:'التسجيل', qaScore:'تقييم الجودة',
+ playRecording:'تشغيل', downloadRec:'تنزيل', noRecording:'لا يوجد تسجيل', evaluated:'مُقيّمة', notEvaluated:'لم تُقيّم',
+ qaTitle:'تقييم الجودة', qaPending:'مكالمات بانتظار التقييم', qaDone:'مكالمات مُقيّمة', qaEvaluate:'تقييم',
+ qaGreeting:'التحية والافتتاحية', qaVerify:'التحقق من بيانات العميل', qaUnderstand:'فهم المشكلة', qaSolve:'جودة الحل المقدم', qaClose:'الإغلاق والتلخيص',
+ qaNote:'ملاحظات المقيّم', qaSave:'حفظ التقييم', qaAvg:'متوسط التقييم', qaBy:'المقيّم', qaSaved:'تم حفظ التقييم',
+ shiftsTitle:'جدول الشيفتات', shMorning:'صباحي', shEvening:'مسائي', shNight:'ليلي', shOff:'راحة',
+ todayShifts:'شيفتات اليوم', weekOf:'أسبوع يبدأ', lateOrOff:'خارج الشيفت', onTime:'على شيفته',
+ repTitle:'التقارير', today:'اليوم', last7:'آخر 7 أيام', serviceLevel:'مستوى الخدمة', slNote:'نسبة الرد خلال 20 ثانية',
+ answeredToday:'مكالمات مُجابة', abandonedToday:'مكالمات فائتة', qaAvgToday:'متوسط الجودة',
+ callsPerDay:'المكالمات يوميًا', perAgent:'أداء الموظفين', byQueue:'التوزيع حسب الطابور', byDisp:'التوزيع حسب النتيجة',
+ setTitle:'الإعدادات', users:'المستخدمون', addUser:'إضافة مستخدم', fullName:'الاسم الكامل', role:'الدور',
+ roleAdmin:'مدير النظام', roleSuper:'مشرف', roleQa:'الجودة', roleAgent:'موظف خدمة عملاء',
+ queues:'الطوابير', addQueue:'إضافة طابور', queueName:'اسم الطابور',
+ exportData:'تنزيل نسخة احتياطية (JSON)', resetDemo:'إعادة تعيين البيانات التجريبية', resetConfirm:'سيتم مسح كل بيانات العرض والرجوع للبيانات الافتراضية. متابعة؟',
+ recStorageTitle:'حفظ التسجيلات',
+ recStorageBody:'في هذه النسخة التجريبية تُحفظ التسجيلات داخل المتصفح على هذا الجهاز، ويمكن تنزيل أي تسجيل من سجل المكالمات وحفظه على الجهاز أو على هارد خارجي. الحفظ التلقائي المباشر في فولدر على هارد خارجي متاح في متصفح كروم على الكمبيوتر فقط وغير مدعوم على متصفحات الموبايل. في النظام الحقيقي تُحفظ التسجيلات على سيرفر الشركة أو وحدة تخزين شبكية تلقائيًا.',
+ added:'تمت الإضافة', exported:'تم تنزيل النسخة الاحتياطية', done:'تم',
+ sec:'ث', min:'د', hour:'س', ago:'منذ', todayWord:'اليوم', day:['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'],
+ yes:'نعم', no:'لا', cancel:'إلغاء', save:'حفظ', close:'إغلاق', user:'المستخدم',
+ noData:'لا توجد بيانات بعد', ringing:'يرن…', missedNote:'مكالمة فائتة سُجلت في السجل',
+ statusSince:'منذ', breakReason:'سبب البريك', chooseReason:'اختر السبب', myToday:'إحصائياتي اليوم', myCalls:'مكالماتي اليوم'
+},
+en: {
+ appName:'Nexus Call Center', appSub:'Contact center management', simBadge:'Demo — simulated data',
+ loginTitle:'Sign in', loginTag:'Pick a demo account or type its credentials. Password for all accounts: 1234',
+ username:'Username', password:'Password', loginBtn:'Sign in', wrongLogin:'Invalid credentials',
+ demoAccounts:'Demo accounts', logout:'Log out', langBtn:'العربية',
+ navDesktop:'Agent desktop', navWall:'Live wallboard', navCalls:'Call log', navQa:'Quality review',
+ navShifts:'Shifts', navReports:'Reports', navSettings:'Settings',
+ ready:'Ready', oncall:'On call', acw:'After-call work', break:'Break', offline:'Offline',
+ breakShort:'Short break', lunch:'Lunch', meeting:'Meeting', training:'Training',
+ setReady:'Go ready', takeBreak:'Start break', endBreak:'End break', startAcw:'Wrap up',
+ timeInStatus:'Time in current status', currentStatus:'Your status',
+ incomingCall:'Incoming call', answer:'Answer', reject:'Reject', queue:'Queue', customer:'Customer', phone:'Phone',
+ callActive:'Call in progress', endCall:'End call', callDuration:'Call duration', recordingOn:'Recording', recordingOff:'No audio recording',
+ wrapTitle:'Call wrap-up', disposition:'Call outcome', note:'Note', saveWrap:'Save and finish',
+ dSolved:'Resolved', dFollow:'Follow-up needed', dComplaint:'Open complaint', dInquiry:'General inquiry', dCancel:'Cancel/change order',
+ micTitle:'Demo call recording',
+ micBody:'In this demo your microphone can record your voice during the simulated call so the QA team can listen and review. Recording is fully optional, stored only in this browser, and you can download it from the call log. Enable recording?',
+ micYes:'Yes, enable recording', micNo:'No, skip recording', micDenied:'Microphone unavailable, call will be saved without audio',
+ qSales:'Sales', qSupport:'Customer service', qComplaints:'Complaints',
+ wallTitle:'Live wallboard', agents:'Agents', callsToday:'Calls today', aht:'Avg handle time',
+ onShiftNow:'On shift now', waitingNow:'Calls waiting', simulatedAgent:'Simulated',
+ colAgent:'Agent', colStatus:'Status', colSince:'Since', colCalls:'Calls', colAht:'Avg time',
+ callsTitle:'Call log', search:'Search name or number', allQueues:'All queues', allAgents:'All agents',
+ allResults:'All outcomes', answered:'Answered', abandoned:'Abandoned', direction:'Direction', inbound:'Inbound', outbound:'Outbound',
+ date:'Date', time:'Time', duration:'Duration', wait:'Wait', result:'Outcome', recording:'Recording', qaScore:'QA score',
+ playRecording:'Play', downloadRec:'Download', noRecording:'No recording', evaluated:'Evaluated', notEvaluated:'Not evaluated',
+ qaTitle:'Quality review', qaPending:'Calls pending review', qaDone:'Reviewed calls', qaEvaluate:'Evaluate',
+ qaGreeting:'Greeting and opening', qaVerify:'Customer verification', qaUnderstand:'Understanding the issue', qaSolve:'Quality of solution', qaClose:'Closing and summary',
+ qaNote:'Reviewer notes', qaSave:'Save evaluation', qaAvg:'Average score', qaBy:'Reviewer', qaSaved:'Evaluation saved',
+ shiftsTitle:'Shift schedule', shMorning:'Morning', shEvening:'Evening', shNight:'Night', shOff:'Off',
+ todayShifts:"Today's shifts", weekOf:'Week starting', lateOrOff:'Off shift', onTime:'On shift',
+ repTitle:'Reports', today:'Today', last7:'Last 7 days', serviceLevel:'Service level', slNote:'Answered within 20 seconds',
+ answeredToday:'Answered', abandonedToday:'Abandoned', qaAvgToday:'Avg quality',
+ callsPerDay:'Calls per day', perAgent:'Agent performance', byQueue:'By queue', byDisp:'By outcome',
+ setTitle:'Settings', users:'Users', addUser:'Add user', fullName:'Full name', role:'Role',
+ roleAdmin:'System admin', roleSuper:'Supervisor', roleQa:'Quality', roleAgent:'Customer service agent',
+ queues:'Queues', addQueue:'Add queue', queueName:'Queue name',
+ exportData:'Download backup (JSON)', resetDemo:'Reset demo data', resetConfirm:'This clears all demo data and restores defaults. Continue?',
+ recStorageTitle:'Recording storage',
+ recStorageBody:'In this demo recordings are stored inside the browser on this device, and any recording can be downloaded from the call log to the device or an external drive. Automatic saving to an external-drive folder is only available in desktop Chrome, not mobile browsers. The real system stores recordings automatically on a company server or network storage.',
+ added:'Added', exported:'Backup downloaded', done:'Done',
+ sec:'s', min:'m', hour:'h', ago:'ago', todayWord:'Today', day:['Sat','Sun','Mon','Tue','Wed','Thu','Fri'],
+ yes:'Yes', no:'No', cancel:'Cancel', save:'Save', close:'Close', user:'User',
+ noData:'No data yet', ringing:'Ringing…', missedNote:'Abandoned call added to the log',
+ statusSince:'Since', breakReason:'Break reason', chooseReason:'Choose reason', myToday:'My stats today', myCalls:'My calls today'
+}};
+
+/* ---------- store ---------- */
+const LS_KEY='nexus_cc_demo_v1';
+let S=null; // state
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const pad=n=>String(n).padStart(2,'0');
+function fmtDur(sec){sec=Math.max(0,Math.round(sec));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return (h?pad(h)+':':'')+pad(m)+':'+pad(s)}
+function fmtTime(ts){const d=new Date(ts);return pad(d.getHours())+':'+pad(d.getMinutes())}
+function fmtDate(ts){const d=new Date(ts);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function dayStart(ts){const d=new Date(ts);d.setHours(0,0,0,0);return d.getTime()}
+function lang(){return (S&&S.ui.lang)||'ar'}
+function t(k){const L=I18N[lang()];return (L&&L[k]!=null)?L[k]:(I18N.ar[k]!=null?I18N.ar[k]:k)}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(S))}catch(e){toast(t('done'))}}
+function load(){try{const raw=localStorage.getItem(LS_KEY);return raw?JSON.parse(raw):null}catch(e){return null}}
+
+const QUEUES=[{id:'q1',k:'qSupport'},{id:'q2',k:'qSales'},{id:'q3',k:'qComplaints'}];
+const REASONS=['breakShort','lunch','meeting','training'];
+const DISPS=['dSolved','dFollow','dComplaint','dInquiry','dCancel'];
+const SHIFTS={morning:{k:'shMorning',h:9,eh:17},evening:{k:'shEvening',h:15,eh:23},night:{k:'shNight',h:23,eh:7},off:{k:'shOff'}};
+const CUSTOMERS=[['كريم مصطفى','01001234567'],['هبة سامي','01115556677'],['محمود عادل','01223334455'],['رانيا فؤاد','01099887766'],['شريف حسن','01144556677'],['لمى عصام','01566778899'],['طارق يوسف','01011223344'],['سلمى نبيل','01233445566'],['عمرو جمال','01155667788'],['منى سعيد','01066778899'],['باسم زكي','01277889900'],['نورهان عز','01188990011']];
+const AGENT_COLORS=['#4f46e5','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#db2777','#475569'];
+
+function seed(){
+ const users=[
+  {id:'u_admin',un:'admin',pw:'1234',name:'أحمد عبدالله',role:'admin'},
+  {id:'u_sup',un:'supervisor',pw:'1234',name:'سارة محمود',role:'supervisor'},
+  {id:'u_qa',un:'qa',pw:'1234',name:'منى خالد',role:'qa'},
+  {id:'u_a1',un:'agent1',pw:'1234',name:'محمد علي',role:'agent'},
+  {id:'u_a2',un:'agent2',pw:'1234',name:'أحمد سمير',role:'agent'},
+  {id:'u_a3',un:'agent3',pw:'1234',name:'دينا حسن',role:'agent'},
+  {id:'u_a4',un:'agent4',pw:'1234',name:'كريم فؤاد',role:'agent'},
+  {id:'u_a5',un:'agent5',pw:'1234',name:'نور الهدى',role:'agent'},
+  {id:'u_a6',un:'agent6',pw:'1234',name:'حسن إبراهيم',role:'agent'}
+ ];
+ users.forEach((u,i)=>u.color=AGENT_COLORS[i%AGENT_COLORS.length]);
+ const agents=users.filter(u=>u.role==='agent');
+ const statuses={};
+ users.forEach(u=>{statuses[u.id]={s:'offline',reason:null,since:Date.now()}});
+ agents.forEach((a,i)=>{statuses[a.id]={s:['ready','oncall','break','acw','ready','oncall'][i%6],reason:i%6===2?'lunch':null,since:Date.now()-Math.floor(Math.random()*40+3)*60000}});
+ // shifts for current week (Sat-based)
+ const now=new Date();const dow=(now.getDay()+1)%7; // Sat=0
+ const sat=dayStart(now.getTime())-dow*86400000;
+ const shifts={};
+ agents.forEach((a,i)=>{const row={};for(let d=0;d<7;d++){const ts=sat+d*86400000;row[ts]= d===5?'off':['morning','evening','morning','night','evening','morning'][i%6];}shifts[a.id]=row;});
+ // 7 days of call history
+ const calls=[];let cn=1000;
+ for(let d=7;d>=1;d--){
+   const ds=sat-d*86400000;
+   agents.forEach(a=>{
+     const n=6+Math.floor(Math.random()*7);
+     for(let i=0;i<n;i++){
+       const start=ds+(9+Math.floor(Math.random()*11))*3600000+Math.floor(Math.random()*3500000);
+       const ans=Math.random()<0.88;
+       const c=CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)];
+       const q=QUEUES[Math.floor(Math.random()*QUEUES.length)];
+       const waitSec=3+Math.floor(Math.random()*38);
+       const call={id:'c'+(cn++),queueId:q.id,customer:c[0],phone:c[1],dir:'in',agentId:ans?a.id:null,start:start,waitSec:waitSec,answered:ans,sim:true,recording:null};
+       if(ans){call.durSec=60+Math.floor(Math.random()*360);call.disp=DISPS[Math.floor(Math.random()*DISPS.length)];
+         if(Math.random()<0.45){const sc=()=>3+Math.floor(Math.random()*3);call.qa={g:sc(),v:sc(),u:sc(),s:sc(),c:sc(),note:'',by:'منى خالد',at:start+86400000};}
+       }
+       calls.push(call);
+     }
+   });
+ }
+ calls.sort((a,b)=>b.start-a.start);
+ return {ui:{lang:'ar'},users:users,statuses:statuses,calls:calls,shifts:shifts,weekStart:sat,
+  settings:{micConsent:'ask'},session:null,seq:cn};
+}
+function boot(){S=load();if(!S||!S.users){S=seed();save();}}
+function userById(id){return S.users.find(u=>u.id===id)}
+function me(){return S.session?userById(S.session.userId):null}
+function setStatus(uid_,s,reason){S.statuses[uid_]={s:s,reason:reason||null,since:Date.now()};save()}
+function initials(name){return name.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('')}
+
+/* ---------- toast & modal ---------- */
+let toastTimer=null;
+function toast(msg){let el=$('#toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';document.body.appendChild(el);}el.textContent=msg;el.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),2600);}
+function openModal(html){let ov=$('#overlay');if(!ov){ov=document.createElement('div');ov.id='overlay';ov.className='overlay';ov.addEventListener('click',e=>{if(e.target===ov)closeModal();});document.body.appendChild(ov);}ov.innerHTML='<div class="modal">'+html+'</div>';ov.classList.remove('hidden');}
+function closeModal(){const ov=$('#overlay');if(ov)ov.classList.add('hidden');}
+
+/* ---------- simulation engines ---------- */
+let popup=null;      // incoming call popup for logged-in agent
+let active=null;     // active call {queueId,customer,phone,start,recorder,chunks}
+let ringTimer=null;
+const botReasons=['breakShort','lunch','meeting','training'];
+function botsTick(){
+ const meU=me();
+ S.users.filter(u=>u.role==='agent'&&(!meU||u.id!==meU.id)).forEach(a=>{
+   const st=S.statuses[a.id];if(!st)return;
+   const r=Math.random();
+   if(st.s==='ready'&&r<0.10){setStatus(a.id,'oncall');}
+   else if(st.s==='oncall'&&r<0.25){
+     // finish bot call -> log it
+     const c=CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)];
+     const dur=Math.max(35,Math.round((Date.now()-st.since)/1000));
+     S.calls.unshift({id:'c'+(S.seq++),queueId:QUEUES[Math.floor(Math.random()*3)].id,customer:c[0],phone:c[1],dir:'in',agentId:a.id,start:st.since,waitSec:4+Math.floor(Math.random()*30),answered:true,durSec:dur,disp:DISPS[Math.floor(Math.random()*DISPS.length)],sim:true,recording:null});
+     setStatus(a.id,'acw');
+   }
+   else if(st.s==='acw'&&r<0.35){setStatus(a.id,'ready');}
+   else if(st.s==='break'&&r<0.22){setStatus(a.id,'ready');}
+   else if(st.s==='ready'&&r<0.10+0.05){if(r>=0.10&&r<0.16)setStatus(a.id,'break',botReasons[Math.floor(Math.random()*4)]);}
+ });
+ // incoming call for logged-in ready agent
+ if(meU&&meU.role==='agent'&&!popup&&!active&&S.statuses[meU.id].s==='ready'&&Math.random()<0.22){makePopup();}
+ save();
+ if(route==='wall'||route==='desktop'||route==='reports')render();
+}
+function makePopup(){
+ const c=CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)];
+ popup={queueId:QUEUES[Math.floor(Math.random()*3)].id,customer:c[0],phone:c[1],started:Date.now(),waitSec:0};
+ ringTimer=setTimeout(()=>{ // missed
+   S.calls.unshift({id:'c'+(S.seq++),queueId:popup.queueId,customer:popup.customer,phone:popup.phone,dir:'in',agentId:null,start:popup.started,waitSec:25,answered:false,sim:true,recording:null});
+   popup=null;save();toast(t('missedNote'));render();
+ },25000);
+ navigator.vibrate&&navigator.vibrate([200,100,200]);
+ render();
+}
+function answerCall(){
+ if(!popup)return;
+ clearTimeout(ringTimer);
+ active={queueId:popup.queueId,customer:popup.customer,phone:popup.phone,start:Date.now(),waitSec:Math.round((Date.now()-popup.started)/1000),chunks:[],recorder:null};
+ popup=null;
+ setStatus(me().id,'oncall');
+ maybeStartRecording();
+ render();
+}
+function rejectCall(){
+ if(!popup)return;
+ clearTimeout(ringTimer);
+ S.calls.unshift({id:'c'+(S.seq++),queueId:popup.queueId,customer:popup.customer,phone:popup.phone,dir:'in',agentId:null,start:popup.started,waitSec:Math.round((Date.now()-popup.started)/1000),answered:false,sim:true,recording:null});
+ popup=null;save();render();
+}
+function endCall(){
+ if(!active)return;
+ const dur=Math.round((Date.now()-active.start)/1000);
+ const done=(dataUrl)=>{
+   S.calls.unshift({id:'c'+(S.seq++),queueId:active.queueId,customer:active.customer,phone:active.phone,dir:'in',agentId:me().id,start:active.start,waitSec:active.waitSec,answered:true,durSec:dur,disp:null,sim:true,recording:dataUrl||null});
+   setStatus(me().id,'acw');
+   active=null;save();openWrap();
+ };
+ stopRecording(done);
+}
+function openWrap(){
+ const opts=DISPS.map(d=>'<option value="'+d+'">'+t(d)+'</option>').join('');
+ openModal('<h3>'+t('wrapTitle')+'</h3>'+
+  '<div class="field"><label>'+t('disposition')+'</label><select id="wrapDisp">'+opts+'</select></div>'+
+  '<div class="field"><label>'+t('note')+'</label><textarea id="wrapNote" rows="2"></textarea></div>'+
+  '<div class="actions"><button class="btn" onclick="saveWrap()">'+t('saveWrap')+'</button></div>');
+}
+function saveWrap(){
+ const d=$('#wrapDisp').value,n=$('#wrapNote').value;
+ const c=S.calls.find(x=>!x.disp&&x.agentId===me().id);
+ if(c){c.disp=d;c.note=n;save();}
+ closeModal();render();
+}
+
+/* ---------- microphone recording (optional, consented) ---------- */
+function maybeStartRecording(){
+ const mode=S.settings.micConsent;
+ if(mode==='yes'){startMic();return;}
+ if(mode==='no'){return;}
+ openModal('<h3>'+t('micTitle')+'</h3><p style="font-size:13.5px;color:var(--muted)">'+t('micBody')+'</p>'+
+  '<div class="actions"><button class="btn secondary" onclick="micChoice(\'no\')">'+t('micNo')+'</button>'+
+  '<button class="btn" onclick="micChoice(\'yes\')">'+t('micYes')+'</button></div>');
+}
+function micChoice(v){S.settings.micConsent=v;save();closeModal();if(v==='yes')startMic();else toast(t('recordingOff'));}
+function startMic(){
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof MediaRecorder==='undefined'){toast(t('micDenied'));return;}
+ navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+   if(!active){stream.getTracks().forEach(tr=>tr.stop());return;}
+   try{
+     const rec=new MediaRecorder(stream);
+     rec.ondataavailable=e=>{if(e.data&&e.data.size&&active)active.chunks.push(e.data);};
+     active.recorder=rec;active.stream=stream;rec.start(1000);render();
+   }catch(e){toast(t('micDenied'));}
+ }).catch(()=>{toast(t('micDenied'));});
+}
+function stopRecording(done){
+ const a=active;
+ if(!a||!a.recorder){done(null);return;}
+ try{
+   a.recorder.onstop=()=>{
+     a.stream&&a.stream.getTracks().forEach(tr=>tr.stop());
+     const blob=new Blob(a.chunks,{type:a.recorder.mimeType||'audio/webm'});
+     const fr=new FileReader();
+     fr.onload=()=>done(fr.result);
+     fr.onerror=()=>done(null);
+     fr.readAsDataURL(blob);
+   };
+   a.recorder.stop();
+ }catch(e){a.stream&&a.stream.getTracks().forEach(tr=>tr.stop());done(null);}
+}
+function downloadRecording(callId){
+ const c=S.calls.find(x=>x.id===callId);
+ if(!c||!c.recording)return;
+ const a=document.createElement('a');
+ a.href=c.recording;
+ const ext=(c.recording.indexOf('audio/ogg')===5?'ogg':(c.recording.indexOf('audio/mp4')===5?'m4a':'webm'));
+ a.download='call-'+c.id+'-'+c.phone+'.'+ext;
+ document.body.appendChild(a);a.click();a.remove();
+}
+
+/* ---------- layout & routing ---------- */
+let route='login';
+const ROUTES={
+ desktop:{icon:'🎧',roles:['agent']},
+ wall:{icon:'📊',roles:['admin','supervisor','qa','agent']},
+ calls:{icon:'📞',roles:['admin','supervisor','qa','agent']},
+ qa:{icon:'⭐',roles:['admin','supervisor','qa']},
+ shifts:{icon:'🗓️',roles:['admin','supervisor','qa','agent']},
+ reports:{icon:'📈',roles:['admin','supervisor','qa']},
+ settings:{icon:'⚙️',roles:['admin']}
+};
+function navKey(r){return {desktop:'navDesktop',wall:'navWall',calls:'navCalls',qa:'navQa',shifts:'navShifts',reports:'navReports',settings:'navSettings'}[r]}
+function go(r){location.hash='#/'+r;}
+window.addEventListener('hashchange',()=>render());
+function defaultRoute(u){return u.role==='agent'?'desktop':'wall';}
+function render(){
+ const u=me();
+ document.documentElement.lang=lang();
+ document.documentElement.dir=lang()==='ar'?'rtl':'ltr';
+ if(!u){renderLogin();return;}
+ let r=(location.hash||'').replace('#/','')||defaultRoute(u);
+ if(!ROUTES[r]||ROUTES[r].roles.indexOf(u.role)<0)r=defaultRoute(u);
+ route=r;
+ const links=Object.keys(ROUTES).filter(k=>ROUTES[k].roles.indexOf(u.role)>=0);
+ const side=links.map(k=>'<a href="#/'+k+'" class="'+(k===r?'active':'')+'"><span class="ic">'+ROUTES[k].icon+'</span>'+t(navKey(k))+'</a>').join('');
+ const tabs=links.slice(0,5).map(k=>'<a href="#/'+k+'" class="'+(k===r?'active':'')+'"><span class="ic">'+ROUTES[k].icon+'</span>'+t(navKey(k))+'</a>').join('');
+ const body=({desktop:viewDesktop,wall:viewWall,calls:viewCalls,qa:viewQa,shifts:viewShifts,reports:viewReports,settings:viewSettings})[r]();
+ document.getElementById('app').innerHTML=
+ '<div class="shell">'+
+ '<aside class="sidebar"><div class="side-brand"><div class="logo">'+t('appName')+'</div><div class="sub">'+t('appSub')+'</div></div>'+
+ '<nav class="side-nav">'+side+'</nav>'+
+ '<div class="side-foot"><div style="margin-bottom:6px"><span class="sim-badge">'+t('simBadge')+'</span></div>'+esc(u.name)+' · '+t('role'+cap(u.role))+'</div></aside>'+
+ '<div class="main"><div class="topbar"><div class="page-title">'+t(navKey(r))+'</div>'+
+ '<span class="sim-badge">'+t('simBadge')+'</span>'+
+ '<button class="btn gray" style="padding:6px 12px;font-size:12.5px" onclick="toggleLang()">'+t('langBtn')+'</button>'+
+ '<button class="btn secondary" style="padding:6px 12px;font-size:12.5px" onclick="doLogout()">'+t('logout')+'</button></div>'+
+ '<div class="content">'+body+'</div></div>'+
+ '<nav class="bottomnav">'+tabs+'</nav></div>';
+}
+function cap(s){return s[0].toUpperCase()+s.slice(1)}
+function toggleLang(){S.ui.lang=lang()==='ar'?'en':'ar';save();render();}
+function doLogout(){if(active)return;const u=me();if(u)setStatus(u.id,'offline');S.session=null;save();location.hash='';render();}
+function tickTimers(){const el=$('[data-timer]');if(el){const since=+el.getAttribute('data-timer');el.textContent=fmtDur((Date.now()-since)/1000);}const el2=$('[data-calltimer]');if(el2&&active){el2.textContent=fmtDur((Date.now()-active.start)/1000);}}
+
+/* ---------- login ---------- */
+function renderLogin(){
+ route='login';
+ const accs=S.users.filter(u=>['admin','supervisor','qa','agent'].indexOf(u.role)>=0).slice(0,7)
+  .map(u=>'<button class="demo-acc" onclick="fillLogin(\''+u.un+'\')"><b>'+esc(u.name)+'</b><span>'+t('role'+cap(u.role))+' · '+u.un+'</span></button>').join('');
+ document.getElementById('app').innerHTML=
+ '<div class="login-wrap"><div class="login-box">'+
+ '<div class="logo">'+t('appName')+'</div><div class="tag">'+t('appSub')+'</div>'+
+ '<div style="text-align:center;margin-bottom:14px"><span class="sim-badge">'+t('simBadge')+'</span></div>'+
+ '<div class="field"><label>'+t('username')+'</label><input id="liUn" autocomplete="off"></div>'+
+ '<div class="field"><label>'+t('password')+'</label><input id="liPw" type="password"></div>'+
+ '<button class="btn block big" onclick="doLogin()">'+t('loginBtn')+'</button>'+
+ '<div class="mt" style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px">'+t('demoAccounts')+' ('+t('password')+': 1234)</div>'+
+ '<div class="demo-accounts">'+accs+'</div>'+
+ '<div class="mt" style="text-align:center"><button class="btn gray" onclick="S.ui.lang=lang()===\'ar\'?\'en\':\'ar\';save();renderLogin()">'+t('langBtn')+'</button></div>'+
+ '</div></div>';
+}
+function fillLogin(un){$('#liUn').value=un;$('#liPw').value='1234';}
+function doLogin(){
+ const un=$('#liUn').value.trim(),pw=$('#liPw').value;
+ const u=S.users.find(x=>x.un===un&&x.pw===pw);
+ if(!u){toast(t('wrongLogin'));return;}
+ S.session={userId:u.id};
+ setStatus(u.id,u.role==='agent'?'ready':'ready');
+ save();location.hash='#/'+defaultRoute(u);render();
+}
+
+/* ---------- agent desktop ---------- */
+function statusChip(s,reason,big){
+ const label=t(s)+(s==='break'&&reason?' · '+t(reason):'');
+ return '<span class="chip '+s+(big?' big-chip':'')+'"><span class="dot"></span>'+label+'</span>';
+}
+function viewDesktop(){
+ const u=me();const st=S.statuses[u.id];
+ let html='';
+ if(popup){
+   const q=QUEUES.find(q=>q.id===popup.queueId);
+   html+='<div class="call-popup mb"><div class="ring">📳 '+t('incomingCall')+' — '+t('ringing')+'</div>'+
+   '<div class="who">'+esc(popup.customer)+'</div>'+
+   '<div><span class="num">'+esc(popup.phone)+'</span> · <span class="pill">'+t(q.k)+'</span></div>'+
+   '<div class="mt" style="display:flex;gap:10px">'+
+   '<button class="btn ok big" style="flex:1" onclick="answerCall()">'+t('answer')+'</button>'+
+   '<button class="btn danger big" style="flex:1" onclick="rejectCall()">'+t('reject')+'</button></div></div>';
+ }
+ if(active){
+   const q=QUEUES.find(q=>q.id===active.queueId);
+   html+='<div class="active-call mb"><div class="ring" style="font-weight:800;color:var(--oncall)">📞 '+t('callActive')+
+   (active.recorder?' · <span class="rec-dot"></span> '+t('recordingOn'):' · '+t('recordingOff'))+'</div>'+
+   '<div class="who" style="font-size:21px;font-weight:800;margin:8px 0 2px">'+esc(active.customer)+'</div>'+
+   '<div><span class="num">'+esc(active.phone)+'</span> · <span class="pill">'+t(q.k)+'</span></div>'+
+   '<div class="mt" style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums" data-calltimer>00:00</div>'+
+   '<div class="mt"><button class="btn danger big" onclick="endCall()">'+t('endCall')+'</button></div></div>';
+ }
+ const reasonOpts=REASONS.map(r=>'<option value="'+r+'">'+t(r)+'</option>').join('');
+ html+='<div class="card mb"><div class="desk-status">'+
+ '<div style="font-size:12.5px;color:var(--muted);font-weight:700">'+t('currentStatus')+'</div>'+
+ statusChip(st.s,st.reason,true)+
+ '<div class="timer" data-timer="'+st.since+'">'+fmtDur((Date.now()-st.since)/1000)+'</div>'+
+ '<div style="font-size:12px;color:var(--muted)">'+t('timeInStatus')+'</div></div>'+
+ '<div class="desk-actions">'+
+ (st.s!=='ready'?'<button class="btn ok" '+(active?'disabled':'')+' onclick="setStatus(me().id,\'ready\');render()">'+t('setReady')+'</button>':'')+
+ (st.s==='break'?'<button class="btn ok" onclick="setStatus(me().id,\'ready\');render()">'+t('endBreak')+'</button>'
+   :'<div><select id="brkReason" style="margin-bottom:6px">'+reasonOpts+'</select><button class="btn warn block" '+(active?'disabled':'')+' onclick="setStatus(me().id,\'break\',document.getElementById(\'brkReason\').value);render()">'+t('takeBreak')+'</button></div>')+
+ '</div></div>';
+ // my today stats
+ const ds=dayStart(Date.now());
+ const mine=S.calls.filter(c=>c.agentId===u.id&&c.start>=ds&&c.answered);
+ const aht=mine.length?Math.round(mine.reduce((a,c)=>a+(c.durSec||0),0)/mine.length):0;
+ html+='<div class="kpis"><div class="kpi"><div class="lbl">'+t('myCalls')+'</div><div class="val">'+mine.length+'</div></div>'+
+ '<div class="kpi"><div class="lbl">'+t('aht')+'</div><div class="val">'+fmtDur(aht)+'</div></div></div>';
+ const myRecent=S.calls.filter(c=>c.agentId===u.id).slice(0,8);
+ html+='<div class="card mt"><h3>'+t('callsTitle')+'</h3>'+callRows(myRecent,true)+'</div>';
+ return html;
+}
+
+/* ---------- shared call rows ---------- */
+function callRows(list,compact){
+ if(!list.length)return '<div style="color:var(--muted);font-size:13px">'+t('noData')+'</div>';
+ return '<div class="tbl-wrap"><table><thead><tr>'+
+ '<th>'+t('customer')+'</th><th>'+t('queue')+'</th><th>'+t('colAgent')+'</th><th>'+t('date')+'</th><th>'+t('wait')+'</th><th>'+t('duration')+'</th><th>'+t('result')+'</th><th>'+t('recording')+'</th><th>'+t('qaScore')+'</th></tr></thead><tbody>'+
+ list.map(c=>{
+   const q=QUEUES.find(q=>q.id===c.queueId);
+   const a=c.agentId?userById(c.agentId):null;
+   const qa=c.qa?((c.qa.g+c.qa.v+c.qa.u+c.qa.s+c.qa.c)/5).toFixed(1):null;
+   return '<tr>'+
+   '<td><b>'+esc(c.customer)+'</b><br><span style="color:var(--muted);font-size:12px;direction:ltr;display:inline-block">'+esc(c.phone)+'</span></td>'+
+   '<td>'+(q?t(q.k):'')+'</td>'+
+   '<td>'+(a?esc(a.name):'<span class="pill red">'+t('abandoned')+'</span>')+'</td>'+
+   '<td style="white-space:nowrap">'+fmtDate(c.start)+'<br><span style="color:var(--muted);font-size:12px">'+fmtTime(c.start)+'</span></td>'+
+   '<td>'+(c.answered?c.waitSec+t('sec'):'-')+'</td>'+
+   '<td>'+(c.answered?fmtDur(c.durSec):'-')+'</td>'+
+   '<td>'+(c.answered?'<span class="pill green">'+t(c.disp||'dSolved')+'</span>':'<span class="pill red">'+t('abandoned')+'</span>')+'</td>'+
+   '<td>'+(c.recording?'<button class="btn soft" style="padding:4px 10px;font-size:12px" onclick="toggleAudio(\''+c.id+'\')">▶ '+t('playRecording')+'</button> <button class="btn gray" style="padding:4px 10px;font-size:12px" onclick="downloadRecording(\''+c.id+'\')">⬇ '+t('downloadRec')+'</button><div id="au-'+c.id+'" class="hidden"><audio controls src="'+c.recording+'"></audio></div>':'<span style="color:var(--muted);font-size:12px">'+t('noRecording')+'</span>')+'</td>'+
+   '<td>'+(qa?'<span class="pill green">★ '+qa+'</span>':'<span class="pill gray">'+t('notEvaluated')+'</span>')+'</td></tr>';
+ }).join('')+'</tbody></table></div>';
+}
+function toggleAudio(id){const el=document.getElementById('au-'+id);if(el)el.classList.toggle('hidden');}
+
+/* ---------- wallboard ---------- */
+function viewWall(){
+ const ds=dayStart(Date.now());
+ const agents=S.users.filter(u=>u.role==='agent');
+ const onShift=agents.filter(a=>shiftNow(a)).length;
+ const waiting=popup?1:0;
+ const todayCalls=S.calls.filter(c=>c.start>=ds&&c.answered);
+ const aht=todayCalls.length?Math.round(todayCalls.reduce((a,c)=>a+(c.durSec||0),0)/todayCalls.length):0;
+ let html='<div class="kpis mb">'+
+ '<div class="kpi"><div class="lbl">'+t('agents')+'</div><div class="val">'+agents.length+'</div><div class="sub">'+t('onShiftNow')+': '+onShift+'</div></div>'+
+ '<div class="kpi"><div class="lbl">'+t('callsToday')+'</div><div class="val">'+todayCalls.length+'</div></div>'+
+ '<div class="kpi"><div class="lbl">'+t('aht')+'</div><div class="val">'+fmtDur(aht)+'</div></div>'+
+ '<div class="kpi"><div class="lbl">'+t('waitingNow')+'</div><div class="val">'+waiting+'</div></div></div>';
+ html+='<div class="wall-grid">'+agents.map(a=>{
+   const st=S.statuses[a.id];
+   const mine=S.calls.filter(c=>c.agentId===a.id&&c.start>=ds&&c.answered);
+   const ma=mine.length?Math.round(mine.reduce((x,c)=>x+(c.durSec||0),0)/mine.length):0;
+   const isMe=me()&&me().id===a.id;
+   const col=({ready:'var(--ready)',oncall:'var(--oncall)',acw:'var(--acw)',break:'var(--break)',offline:'var(--offline)'})[st.s];
+   return '<div class="agent-card" style="--st:'+col+'"><div class="head">'+
+   '<div class="avatar" style="background:'+a.color+'">'+esc(initials(a.name))+'</div>'+
+   '<div><div class="nm">'+esc(a.name)+'</div><div class="rl">'+(isMe?t('user'):t('simulatedAgent'))+'</div></div></div>'+
+   '<div class="strow">'+statusChip(st.s,st.reason)+'<span class="since" data-timer="'+st.since+'">'+fmtDur((Date.now()-st.since)/1000)+'</span></div>'+
+   '<div class="mini"><span>'+t('colCalls')+': <b>'+mine.length+'</b></span><span>'+t('colAht')+': <b>'+fmtDur(ma)+'</b></span></div></div>';
+ }).join('')+'</div>';
+ return html;
+}
+function shiftNow(a){
+ const row=S.shifts[a.id];if(!row)return false;
+ const key=dayStart(S.weekStart+((new Date().getDay()+1)%7)*86400000);
+ const sh=row[key];if(!sh||sh==='off')return false;
+ const h=new Date().getHours();const def=SHIFTS[sh];
+ if(sh==='night')return h>=23||h<7;
+ return h>=def.h&&h<def.eh;
+}
+
+/* ---------- call log ---------- */
+let callFilter={q:'',queue:'',agent:'',res:''};
+function viewCalls(){
+ const agents=S.users.filter(u=>u.role==='agent');
+ let list=S.calls.slice(0,400);
+ const f=callFilter;
+ if(f.q)list=list.filter(c=>(c.customer+c.phone).indexOf(f.q)>=0);
+ if(f.queue)list=list.filter(c=>c.queueId===f.queue);
+ if(f.agent)list=list.filter(c=>c.agentId===f.agent);
+ if(f.res==='answered')list=list.filter(c=>c.answered);
+ if(f.res==='abandoned')list=list.filter(c=>!c.answered);
+ return '<div class="card mb"><div style="display:flex;gap:8px;flex-wrap:wrap">'+
+ '<input style="flex:2;min-width:170px" placeholder="'+t('search')+'" value="'+esc(f.q)+'" oninput="callFilter.q=this.value;refreshCalls()">'+
+ '<select style="flex:1;min-width:120px" onchange="callFilter.queue=this.value;refreshCalls()"><option value="">'+t('allQueues')+'</option>'+QUEUES.map(q=>'<option value="'+q.id+'" '+(f.queue===q.id?'selected':'')+'>'+t(q.k)+'</option>').join('')+'</select>'+
+ '<select style="flex:1;min-width:120px" onchange="callFilter.agent=this.value;refreshCalls()"><option value="">'+t('allAgents')+'</option>'+agents.map(a=>'<option value="'+a.id+'" '+(f.agent===a.id?'selected':'')+'>'+esc(a.name)+'</option>').join('')+'</select>'+
+ '<select style="flex:1;min-width:110px" onchange="callFilter.res=this.value;refreshCalls()"><option value="">'+t('allResults')+'</option><option value="answered" '+(f.res==='answered'?'selected':'')+'>'+t('answered')+'</option><option value="abandoned" '+(f.res==='abandoned'?'selected':'')+'>'+t('abandoned')+'</option></select>'+
+ '</div></div>'+callRows(list.slice(0,120));
+}
+function refreshCalls(){const c=$('.content');if(c&&route==='calls'){c.innerHTML=viewCalls();const inp=c.querySelector('input');inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}}
+
+/* ---------- QA ---------- */
+let qaTab='pending';
+function viewQa(){
+ const answered=S.calls.filter(c=>c.answered);
+ const pending=answered.filter(c=>!c.qa);
+ const done=answered.filter(c=>c.qa);
+ const list=(qaTab==='pending'?pending:done).slice(0,60);
+ let html='<div class="card mb"><div style="display:flex;gap:8px">'+
+ '<button class="btn '+(qaTab==='pending'?'':'secondary')+'" onclick="qaTab=\'pending\';render()">'+t('qaPending')+' ('+pending.length+')</button>'+
+ '<button class="btn '+(qaTab==='done'?'':'secondary')+'" onclick="qaTab=\'done\';render()">'+t('qaDone')+' ('+done.length+')</button></div></div>';
+ if(!list.length)return html+'<div class="card" style="color:var(--muted)">'+t('noData')+'</div>';
+ html+='<div class="tbl-wrap"><table><thead><tr><th>'+t('customer')+'</th><th>'+t('colAgent')+'</th><th>'+t('date')+'</th><th>'+t('duration')+'</th><th>'+t('recording')+'</th><th>'+t('qaScore')+'</th><th></th></tr></thead><tbody>'+
+ list.map(c=>{
+   const a=userById(c.agentId);
+   const qa=c.qa?((c.qa.g+c.qa.v+c.qa.u+c.qa.s+c.qa.c)/5).toFixed(1):null;
+   return '<tr><td><b>'+esc(c.customer)+'</b><br><span style="color:var(--muted);font-size:12px">'+esc(c.phone)+'</span></td>'+
+   '<td>'+(a?esc(a.name):'')+'</td><td style="white-space:nowrap">'+fmtDate(c.start)+'<br><span style="color:var(--muted);font-size:12px">'+fmtTime(c.start)+'</span></td>'+
+   '<td>'+fmtDur(c.durSec)+'</td>'+
+   '<td>'+(c.recording?'<button class="btn soft" style="padding:4px 10px;font-size:12px" onclick="toggleAudio(\''+c.id+'\')">▶</button><div id="au-'+c.id+'" class="hidden"><audio controls src="'+c.recording+'"></audio></div>':'<span style="color:var(--muted);font-size:12px">'+t('noRecording')+'</span>')+'</td>'+
+   '<td>'+(qa?'<span class="pill green">★ '+qa+'</span>':'<span class="pill gray">'+t('notEvaluated')+'</span>')+'</td>'+
+   '<td><button class="btn" style="padding:5px 12px;font-size:12.5px" onclick="openQa(\''+c.id+'\')">'+t('qaEvaluate')+'</button></td></tr>';
+ }).join('')+'</tbody></table></div>';
+ return html;
+}
+let qaSel=null;
+function openQa(id){
+ qaSel=S.calls.find(c=>c.id===id);if(!qaSel)return;
+ const crit=[['g','qaGreeting'],['v','qaVerify'],['u','qaUnderstand'],['s','qaSolve'],['c','qaClose']];
+ const cur=qaSel.qa||{g:0,v:0,u:0,s:0,c:0,note:''};
+ const rows=crit.map(([k,label])=>'<div class="field"><label>'+t(label)+'</label><div class="stars" data-crit="'+k+'">'+
+   [1,2,3,4,5].map(n=>'<button type="button" class="'+(cur[k]>=n?'on':'')+'" onclick="setStar(this,'+n+')">★</button>').join('')+'</div></div>').join('');
+ openModal('<h3>'+t('qaEvaluate')+' — '+esc(qaSel.customer)+'</h3>'+
+ (qaSel.recording?'<audio controls src="'+qaSel.recording+'"></audio>':'<div style="color:var(--muted);font-size:12.5px;margin-bottom:10px">'+t('noRecording')+'</div>')+
+ rows+'<div class="field"><label>'+t('qaNote')+'</label><textarea id="qaNoteTxt" rows="2">'+esc(cur.note||'')+'</textarea></div>'+
+ '<div class="actions"><button class="btn secondary" onclick="closeModal()">'+t('cancel')+'</button><button class="btn" onclick="saveQa()">'+t('qaSave')+'</button></div>');
+}
+function setStar(btn,n){
+ const row=btn.parentElement;
+ [...row.children].forEach((b,i)=>b.classList.toggle('on',i<n));
+ row.setAttribute('data-val',n);
+}
+function saveQa(){
+ if(!qaSel)return;
+ const rows=document.querySelectorAll('.stars');const vals={};
+ let ok=true;
+ rows.forEach(r=>{const v=+((r.getAttribute('data-val'))||[...r.children].filter(b=>b.classList.contains('on')).length);if(!v)ok=false;vals[r.getAttribute('data-crit')]=v;});
+ if(!ok){toast('★');return;}
+ qaSel.qa={g:vals.g,v:vals.v,u:vals.u,s:vals.s,c:vals.c,note:$('#qaNoteTxt').value,by:me().name,at:Date.now()};
+ save();closeModal();toast(t('qaSaved'));render();
+}
+
+/* ---------- shifts ---------- */
+function viewShifts(){
+ const agents=S.users.filter(u=>u.role==='agent');
+ const ws=S.weekStart;
+ const days=[0,1,2,3,4,5,6].map(d=>ws+d*86400000);
+ const todayKey=dayStart(Date.now());
+ let html='<div class="card mb"><h3>'+t('todayShifts')+'</h3>'+
+ '<div class="wall-grid">'+agents.map(a=>{
+   const row=S.shifts[a.id]||{};const sh=row[todayKey]||'off';
+   const st=S.statuses[a.id];
+   const onNow=shiftNow(a);
+   const okShift=(sh!=='off'&&st.s!=='offline'&&onNow);
+   return '<div class="agent-card" style="--st:'+(sh==='off'?'var(--offline)':'var(--brand)')+'"><div class="head"><div class="avatar" style="background:'+a.color+'">'+esc(initials(a.name))+'</div>'+
+   '<div><div class="nm">'+esc(a.name)+'</div><div class="rl">'+t(SHIFTS[sh].k)+(sh!=='off'?' · '+SHIFTS[sh].h+':00 – '+SHIFTS[sh].eh+':00':'')+'</div></div></div>'+
+   '<div class="strow">'+statusChip(st.s,st.reason)+'<span class="pill '+(sh==='off'?'gray':(okShift?'green':'amber'))+'">'+(sh==='off'?t('shOff'):(okShift?t('onTime'):t('lateOrOff')))+'</span></div></div>';
+ }).join('')+'</div></div>';
+ const canEdit=['admin','supervisor'].indexOf(me().role)>=0;
+ html+='<div class="tbl-wrap"><table><thead><tr><th>'+t('colAgent')+'</th>'+days.map(d=>'<th>'+t('day')[Math.round((d-ws)/86400000)]+(dayStart(d)===todayKey?' · '+t('todayWord'):'')+'</th>').join('')+'</tr></thead><tbody>'+
+ agents.map(a=>'<tr><td style="white-space:nowrap"><b>'+esc(a.name)+'</b></td>'+days.map(d=>{
+   const row=S.shifts[a.id]||{};const cur=row[dayStart(d)]||'off';
+   if(!canEdit)return '<td>'+t(SHIFTS[cur].k)+'</td>';
+   return '<td><select style="padding:5px 8px;font-size:12.5px;min-width:90px" onchange="setShift(\''+a.id+'\','+dayStart(d)+',this.value)">'+
+    Object.keys(SHIFTS).map(k=>'<option value="'+k+'" '+(k===cur?'selected':'')+'>'+t(SHIFTS[k].k)+'</option>').join('')+'</select></td>';
+ }).join('')+'</tr>').join('')+'</tbody></table></div>';
+ return html;
+}
+function setShift(uid_,day,val){if(!S.shifts[uid_])S.shifts[uid_]={};S.shifts[uid_][day]=val;save();render();}
+
+/* ---------- reports ---------- */
+function viewReports(){
+ const ds=dayStart(Date.now());
+ const today=S.calls.filter(c=>c.start>=ds);
+ const ans=today.filter(c=>c.answered);
+ const abn=today.filter(c=>!c.answered);
+ const sl=ans.length?Math.round(100*ans.filter(c=>c.waitSec<=20).length/ans.length):0;
+ const aht=ans.length?Math.round(ans.reduce((a,c)=>a+(c.durSec||0),0)/ans.length):0;
+ const scored=today.filter(c=>c.qa);
+ const qaAvg=scored.length?(scored.reduce((a,c)=>a+(c.qa.g+c.qa.v+c.qa.u+c.qa.s+c.qa.c)/5,0)/scored.length).toFixed(1):'-';
+ let html='<div class="kpis mb">'+
+ '<div class="kpi"><div class="lbl">'+t('answeredToday')+'</div><div class="val">'+ans.length+'</div></div>'+
+ '<div class="kpi"><div class="lbl">'+t('abandonedToday')+'</div><div class="val" style="color:var(--danger)">'+abn.length+'</div></div>'+
+ '<div class="kpi"><div class="lbl">'+t('serviceLevel')+'</div><div class="val">'+sl+'%</div><div class="sub">'+t('slNote')+'</div></div>'+
+ '<div class="kpi"><div class="lbl">'+t('aht')+'</div><div class="val">'+fmtDur(aht)+'</div></div>'+
+ '<div class="kpi"><div class="lbl">'+t('qaAvgToday')+'</div><div class="val">★ '+qaAvg+'</div></div></div>';
+ // last 7 days bars
+ const days=[];for(let d=6;d>=0;d--)days.push(ds-d*86400000);
+ const max=Math.max.apply(null,days.map(d=>S.calls.filter(c=>c.start>=d&&c.start<d+86400000&&c.answered).length).concat([1]));
+ html+='<div class="card mb"><h3>'+t('callsPerDay')+'</h3>'+days.map(d=>{
+   const n=S.calls.filter(c=>c.start>=d&&c.start<d+86400000&&c.answered).length;
+   const lbl=d===ds?t('todayWord'):fmtDate(d);
+   return '<div class="bar-row"><span class="bl">'+lbl+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(100*n/max)+'%"></div></div><span class="bv">'+n+'</span></div>';
+ }).join('')+'</div>';
+ // per agent
+ const agents=S.users.filter(u=>u.role==='agent');
+ html+='<div class="card mb"><h3>'+t('perAgent')+' ('+t('today')+')</h3><div class="tbl-wrap" style="box-shadow:none;border:none"><table style="min-width:480px"><thead><tr><th>'+t('colAgent')+'</th><th>'+t('colCalls')+'</th><th>'+t('colAht')+'</th><th>'+t('qaAvg')+'</th><th>'+t('colStatus')+'</th></tr></thead><tbody>'+
+ agents.map(a=>{
+   const mine=ans.filter(c=>c.agentId===a.id);
+   const ma=mine.length?Math.round(mine.reduce((x,c)=>x+(c.durSec||0),0)/mine.length):0;
+   const ms=mine.filter(c=>c.qa);const mq=ms.length?(ms.reduce((x,c)=>x+(c.qa.g+c.qa.v+c.qa.u+c.qa.s+c.qa.c)/5,0)/ms.length).toFixed(1):'-';
+   const st=S.statuses[a.id];
+   return '<tr><td><b>'+esc(a.name)+'</b></td><td>'+mine.length+'</td><td>'+fmtDur(ma)+'</td><td>★ '+mq+'</td><td>'+statusChip(st.s,st.reason)+'</td></tr>';
+ }).join('')+'</tbody></table></div></div>';
+ // by queue + by disposition
+ const qmax=Math.max.apply(null,QUEUES.map(q=>ans.filter(c=>c.queueId===q.id).length).concat([1]));
+ html+='<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><div class="card"><h3>'+t('byQueue')+'</h3>'+
+ QUEUES.map(q=>{const n=ans.filter(c=>c.queueId===q.id).length;return '<div class="bar-row"><span class="bl">'+t(q.k)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(100*n/qmax)+'%"></div></div><span class="bv">'+n+'</span></div>';}).join('')+'</div>'+
+ '<div class="card"><h3>'+t('byDisp')+'</h3>'+
+ DISPS.map(d=>{const n=ans.filter(c=>c.disp===d).length;const dm=Math.max.apply(null,DISPS.map(x=>ans.filter(c=>c.disp===x).length).concat([1]));return '<div class="bar-row"><span class="bl">'+t(d)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.round(100*n/dm)+'%;background:var(--acw)"></div></div><span class="bv">'+n+'</span></div>';}).join('')+'</div></div>';
+ return html;
+}
+
+/* ---------- settings ---------- */
+function viewSettings(){
+ let html='<div class="card mb"><h3>'+t('users')+'</h3><div class="tbl-wrap" style="box-shadow:none;border:none;margin-bottom:12px"><table style="min-width:420px"><thead><tr><th>'+t('fullName')+'</th><th>'+t('username')+'</th><th>'+t('role')+'</th></tr></thead><tbody>'+
+ S.users.map(u=>'<tr><td><b>'+esc(u.name)+'</b></td><td>'+esc(u.un)+'</td><td><span class="pill">'+t('role'+cap(u.role))+'</span></td></tr>').join('')+'</tbody></table></div>'+
+ '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px">'+
+ '<input id="nuName" placeholder="'+t('fullName')+'"><input id="nuUn" placeholder="'+t('username')+'">'+
+ '<select id="nuRole"><option value="agent">'+t('roleAgent')+'</option><option value="supervisor">'+t('roleSuper')+'</option><option value="qa">'+t('roleQa')+'</option><option value="admin">'+t('roleAdmin')+'</option></select>'+
+ '<button class="btn" onclick="addUser()">'+t('addUser')+'</button></div></div>';
+ html+='<div class="card mb"><h3>'+t('recStorageTitle')+'</h3><p style="font-size:13.5px;color:var(--muted)">'+t('recStorageBody')+'</p></div>';
+ html+='<div class="card"><h3>'+t('setTitle')+'</h3><div style="display:flex;gap:10px;flex-wrap:wrap">'+
+ '<button class="btn soft" onclick="exportData()">'+t('exportData')+'</button>'+
+ '<button class="btn danger" onclick="resetDemo()">'+t('resetDemo')+'</button></div></div>';
+ return html;
+}
+function addUser(){
+ const name=$('#nuName').value.trim(),un=$('#nuUn').value.trim(),role=$('#nuRole').value;
+ if(!name||!un||S.users.find(u=>u.un===un))return toast('!');
+ const id='u_'+uid();
+ S.users.push({id:id,un:un,pw:'1234',name:name,role:role,color:AGENT_COLORS[S.users.length%AGENT_COLORS.length]});
+ S.statuses[id]={s:'offline',reason:null,since:Date.now()};
+ save();toast(t('added'));render();
+}
+function exportData(){
+ const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nexus-call-center-backup-'+fmtDate(Date.now())+'.json';
+ document.body.appendChild(a);a.click();a.remove();toast(t('exported'));
+}
+function resetDemo(){openModal('<h3>'+t('resetDemo')+'</h3><p style="font-size:13.5px;color:var(--muted)">'+t('resetConfirm')+'</p><div class="actions"><button class="btn secondary" onclick="closeModal()">'+t('cancel')+'</button><button class="btn danger" onclick="S=seed();S.ui.lang=lang();save();closeModal();location.hash=\'\';render()">'+t('yes')+'</button></div>');}
+
+/* ---------- boot ---------- */
+boot();
+setInterval(botsTick,4000);
+setInterval(tickTimers,1000);
+render();
+
+</script>
+</body>
+</html>
