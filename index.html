@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>نيكسس كول سنتر — نسخة تجريبية</title>
+<title>أحمد عبدالله بيزنس ديفيلوبمنت — نيكسس كول سنتر (تجريبي)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -171,7 +171,7 @@ audio{width:100%;height:38px;margin-top:6px}
 'use strict';
 const I18N = {
 ar: {
- appName:'نيكسس كول سنتر', appSub:'نظام إدارة مركز الاتصال', simBadge:'نسخة تجريبية — بيانات محاكاة',
+ appName:'نيكسس كول سنتر', appSub:'نظام إدارة مركز الاتصال', brand:'أحمد عبدالله بيزنس ديفيلوبمنت', simBadge:'نسخة تجريبية — بيانات محاكاة',
  loginTitle:'تسجيل الدخول', loginTag:'اختر حسابًا تجريبيًا أو اكتب بياناته. كلمة السر لكل الحسابات: 1234',
  username:'اسم المستخدم', password:'كلمة السر', loginBtn:'دخول', wrongLogin:'بيانات الدخول غير صحيحة',
  demoAccounts:'الحسابات التجريبية', logout:'خروج', langBtn:'English',
@@ -217,7 +217,7 @@ ar: {
  statusSince:'منذ', breakReason:'سبب البريك', chooseReason:'اختر السبب', myToday:'إحصائياتي اليوم', myCalls:'مكالماتي اليوم'
 },
 en: {
- appName:'Nexus Call Center', appSub:'Contact center management', simBadge:'Demo — simulated data',
+ appName:'Nexus Call Center', appSub:'Contact center management', brand:'Ahmed Abdullah Business Development', simBadge:'Demo — simulated data',
  loginTitle:'Sign in', loginTag:'Pick a demo account or type its credentials. Password for all accounts: 1234',
  username:'Username', password:'Password', loginBtn:'Sign in', wrongLogin:'Invalid credentials',
  demoAccounts:'Demo accounts', logout:'Log out', langBtn:'العربية',
@@ -495,7 +495,7 @@ function render(){
  const body=({desktop:viewDesktop,wall:viewWall,calls:viewCalls,qa:viewQa,shifts:viewShifts,reports:viewReports,settings:viewSettings})[r]();
  document.getElementById('app').innerHTML=
  '<div class="shell">'+
- '<aside class="sidebar"><div class="side-brand"><div class="logo">'+t('appName')+'</div><div class="sub">'+t('appSub')+'</div></div>'+
+ '<aside class="sidebar"><div class="side-brand"><div class="logo">'+t('appName')+'</div><div class="sub">'+t('appSub')+'</div><div class="sub" style="margin-top:5px;color:#a5b4fc;font-weight:700">'+t('brand')+'</div></div>'+
  '<nav class="side-nav">'+side+'</nav>'+
  '<div class="side-foot"><div style="margin-bottom:6px"><span class="sim-badge">'+t('simBadge')+'</span></div>'+esc(u.name)+' · '+t('role'+cap(u.role))+'</div></aside>'+
  '<div class="main"><div class="topbar"><div class="page-title">'+t(navKey(r))+'</div>'+
@@ -517,7 +517,7 @@ function renderLogin(){
   .map(u=>'<button class="demo-acc" onclick="fillLogin(\''+u.un+'\')"><b>'+esc(u.name)+'</b><span>'+t('role'+cap(u.role))+' · '+u.un+'</span></button>').join('');
  document.getElementById('app').innerHTML=
  '<div class="login-wrap"><div class="login-box">'+
- '<div class="logo">'+t('appName')+'</div><div class="tag">'+t('appSub')+'</div>'+
+ '<div class="logo">'+t('appName')+'</div><div class="tag">'+t('appSub')+'</div><div class="tag" style="margin-top:4px;color:#4f46e5;font-weight:700">'+t('brand')+'</div>'+
  '<div style="text-align:center;margin-bottom:14px"><span class="sim-badge">'+t('simBadge')+'</span></div>'+
  '<div class="field"><label>'+t('username')+'</label><input id="liUn" autocomplete="off"></div>'+
  '<div class="field"><label>'+t('password')+'</label><input id="liPw" type="password"></div>'+

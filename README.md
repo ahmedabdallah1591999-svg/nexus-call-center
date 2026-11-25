@@ -1,5 +1,7 @@
 # Nexus Call Center — نسخة تجريبية (Demo)
 
+نظام من أنظمة **أحمد عبدالله بيزنس ديفيلوبمنت** — Ahmed Abdullah Business Development.
+
 Arabic-first contact-center management demo. **All data is simulated** and stored in the visitor's own browser (localStorage). Built to present the concept to management — not a production system.
 
 ## What it shows
